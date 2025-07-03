@@ -1,20 +1,21 @@
 const http = require('http');
-const fs = require('fs');
+
+const PORT = process.env.PORT || 10000;
 
 const server = http.createServer((req, res) => {
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const userAgent = req.headers['user-agent'] || 'unknown';
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const data = url.searchParams.get('data') || 'No data';
+  if (req.url.startsWith("/callback")) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const data = url.searchParams.get("data");
+    console.log("✅ Callback received:\n", decodeURIComponent(data));
 
-  const logEntry = `${new Date().toISOString()} | IP: ${ip} | User-Agent: ${userAgent} | Data: ${data}\n`;
-  fs.appendFileSync('logs.txt', logEntry);
-
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Logged\n');
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Callback logged\n');
+  } else {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('OK\n');
+  }
 });
 
-const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server listening on port ${PORT}`);
 });
